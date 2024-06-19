@@ -1,3 +1,8 @@
+// bg-blue-950 border-blue-950
+// bg-zinc-900 border-zinc-900
+// bg-red-800 border-red-800
+// bg-rose-100 border-rose-100
+
 export const COLORS = [
     {
         label: "Black",
