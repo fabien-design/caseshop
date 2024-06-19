@@ -35,7 +35,6 @@ const Page = () => {
     toast({
         title: "File rejected",
         description: `File ${file.file.name} was rejected. Reason: ${file.errors[0].message}`,
-        status: "error",
         variant: "destructive"
     });
 
