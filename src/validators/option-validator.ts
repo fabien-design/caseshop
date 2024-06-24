@@ -58,42 +58,38 @@ export const MODELS = {
   ],
 } as const;
 
-export const MATERIALS = [
-  {
-    name: "material",
-    options: [
-      {
-        label: "Silicone",
-        value: "silicone",
-        description: undefined,
-        price: PRODUCTS_PRICES.material.silicone
-      },
-      {
-        label: "Soft Polycarbonate",
-        value: "Polycarbonate",
-        description: "Scratch-resistant coating",
-        price: PRODUCTS_PRICES.material.polycarbonate
-      },
-    ],
-  },
-] as const;
-
-export const FINISHES = [
+export const MATERIALS = {
+  name: "material",
+  options: [
     {
-      name: "finishe",
-      options: [
-        {
-          label: "Smooth",
-          value: "smooth",
-          description: undefined,
-          price: PRODUCTS_PRICES.finish.smooth
-        },
-        {
-          label: "Textured",
-          value: "textured",
-          description: "Soft grippy texture",
-          price: PRODUCTS_PRICES.finish.textured 
-        },
-      ],
+      label: "Silicone",
+      value: "silicone",
+      description: undefined,
+      price: PRODUCTS_PRICES.material.silicone,
     },
-  ] as const;
+    {
+      label: "Soft Polycarbonate",
+      value: "Polycarbonate",
+      description: "Scratch-resistant coating",
+      price: PRODUCTS_PRICES.material.polycarbonate,
+    },
+  ],
+} as const;
+
+export const FINISHES = {
+  name: "finish",
+  options: [
+    {
+      label: "Smooth",
+      value: "smooth",
+      description: undefined,
+      price: PRODUCTS_PRICES.finish.smooth,
+    },
+    {
+      label: "Textured",
+      value: "textured",
+      description: "Soft grippy texture",
+      price: PRODUCTS_PRICES.finish.textured,
+    },
+  ],
+} as const;
