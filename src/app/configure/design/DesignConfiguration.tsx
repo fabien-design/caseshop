@@ -7,7 +7,7 @@ import { cn, formatPrice } from "@/lib/utils";
 import NextImage from "next/image";
 import { Rnd } from "react-rnd";
 import { RadioGroup, Radio, Description } from "@headlessui/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   COLORS,
   FINISHES,
@@ -24,6 +24,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check, CheckIcon, ChevronsUpDown } from "lucide-react";
 import { BASE_PRICE } from "@/config/products";
+import { ReloadIcon, ResetIcon } from "@radix-ui/react-icons";
+import { useUploadThing } from "@/lib/uploadthing";
+import { useToast } from "@/components/ui/use-toast";
 
 interface DesignConfiguratorProps {
   configId: string;
@@ -36,6 +39,9 @@ const DesignConfigurator = ({
   imageUrl,
   imageDimensions,
 }: DesignConfiguratorProps) => {
+
+    const { toast } = useToast();
+
   const [options, setOptions] = useState<{
     color: (typeof COLORS)[number];
     model: (typeof MODELS.options)[number];
@@ -48,11 +54,102 @@ const DesignConfigurator = ({
     finish: FINISHES.options[0],
   });
 
+  const [renderedDimension, setRenderedDimension] = useState<{
+    width: number;
+    height: number;
+  }>({
+    width: imageDimensions.width / 4,
+    height: imageDimensions.height / 4,
+  });
+
+  const [renderedPosition, setRenderedPosition] = useState<{
+    x: number;
+    y: number;
+  }>({
+    x: 150,
+    y: 205,
+  });
+
+  const phoneCaseRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const { startUpload } = useUploadThing("imageUploader");
+
+  async function saveConfiguration() {
+    try {
+      const {
+        left: caseLeft,
+        top: caseTop,
+        width,
+        height,
+      } = phoneCaseRef.current!.getBoundingClientRect();
+      const { left: containerLeft, top: containerTop } =
+        containerRef.current!.getBoundingClientRect();
+
+      const leftOffset = caseLeft - containerLeft;
+      const topOffset = caseTop - containerTop;
+
+      const actualX = renderedPosition.x - leftOffset;
+      const actualY = renderedPosition.y - topOffset;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+
+      const userImage = new Image();
+      userImage.crossOrigin = "anonymous";
+      userImage.src = imageUrl;
+      await new Promise((resolve) => {
+        userImage.onload = resolve;
+      });
+
+      ctx?.drawImage(
+        userImage,
+        actualX,
+        actualY,
+        renderedDimension.width,
+        renderedDimension.height
+      );
+
+      const base64 = canvas.toDataURL();
+      const base64Data = base64.split(",")[1];
+
+      const blob = base64toBlob(base64Data, "image/png");
+      const file = new File([blob], "design.png", { type: "image/png" });
+
+      await startUpload([file], { configId });
+    } catch (e) {
+        toast({
+            title: "Something went wrong",
+            description: "There was a problem saving your config, please try again.",
+            variant: "destructive",
+        })
+    }
+  }
+
+  function base64toBlob(base64: string, mymeType: string) {
+    const byteCharacters = atob(base64);
+    const len = byteCharacters.length;
+    const byteNumbers = new Array(len);
+
+    for (let i = 0; i < len; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: mymeType });
+  }
+
   return (
     <div className="relative mt-20 grid grid-cols-1 lg:grid-cols-3 mb-20 pb-20">
-      <div className="relative h-[37.5rem] overflow-hidden col-span-2 w-full max-w-4xl flex items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-12 text-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+      <div
+        ref={containerRef}
+        className="relative h-[37.5rem] overflow-hidden col-span-2 w-full max-w-4xl flex items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-12 text-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+      >
         <div className="relative w-60 bg-opacity-50 pointer-events-none aspect-[896/1831]">
           <AspectRatio
+            ref={phoneCaseRef}
             ratio={896 / 1831}
             className="pointer-events-none relative z-50 aspect-[896/1831] w-full"
           >
@@ -77,6 +174,22 @@ const DesignConfigurator = ({
             y: 205,
             height: imageDimensions.height / 4,
             width: imageDimensions.width / 4,
+          }}
+          onResizeStop={(_, __, ref, ___, { x, y }) => {
+            setRenderedDimension({
+              width: parseInt(ref.style.width.slice(0, -2)),
+              height: parseInt(ref.style.height.slice(0, -2)),
+            });
+            setRenderedPosition({
+              x,
+              y,
+            });
+          }}
+          onDragStop={(_, data) => {
+            setRenderedPosition({
+              x: data.x,
+              y: data.y,
+            });
           }}
           lockAspectRatio
           resizeHandleComponent={{
@@ -244,7 +357,7 @@ const DesignConfigurator = ({
                             sm:flex-col sm:text-right"
                           >
                             <span className="font-medium text-gray-900">
-                                {formatPrice(option.price)}
+                              {formatPrice(option.price)}
                             </span>
                           </Description>
                         </Radio>
@@ -258,18 +371,24 @@ const DesignConfigurator = ({
         </ScrollArea>
 
         <div className="w-full px-8 h-16 bg-white">
-            <div className="h-px w-full bg-zinc-200"/>
-            <div className="w-full h-full flex justify-end items-center">
-                <div className="w-full flex gap-6 items-center">
-                    <p className="font-medium whitespace-nowrap">
-                        {formatPrice(BASE_PRICE + options.material.price + options.finish.price)}
-                    </p>
-                    <Button size="sm" className="w-full" >
-                        Continue
-                        <ArrowRight className="ml-2 h-4 w-4 inline shrink-0"/>
-                    </Button>
-                </div>
+          <div className="h-px w-full bg-zinc-200" />
+          <div className="w-full h-full flex justify-end items-center">
+            <div className="w-full flex gap-6 items-center">
+              <p className="font-medium whitespace-nowrap">
+                {formatPrice(
+                  BASE_PRICE + options.material.price + options.finish.price
+                )}
+              </p>
+              <Button
+                onClick={() => saveConfiguration()}
+                size="sm"
+                className="w-full"
+              >
+                Continue
+                <ArrowRight className="ml-2 h-4 w-4 inline shrink-0" />
+              </Button>
             </div>
+          </div>
         </div>
       </div>
     </div>
