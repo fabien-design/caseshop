@@ -1,15 +1,15 @@
 import { text } from "stream/consumers";
 
-export const BASE_PRICE = 13.99;
+export const BASE_PRICE = 1399;
 
 export const PRODUCTS_PRICES = {
     material: {
         silicone: 0,
-        polycarbonate: 30,
+        polycarbonate: 3000,
 
     },
     finish: {
         smooth: 0,
-        textured: 3.99,
+        textured: 399,
     }
 } as const;

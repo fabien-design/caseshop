@@ -377,7 +377,7 @@ const DesignConfigurator = ({
                             sm:flex-col sm:text-right"
                           >
                             <span className="font-medium text-gray-900">
-                              {formatPrice(option.price)}
+                              {formatPrice(option.price / 100)}
                             </span>
                           </Description>
                         </Radio>
@@ -396,7 +396,7 @@ const DesignConfigurator = ({
             <div className="w-full flex gap-6 items-center">
               <p className="font-medium whitespace-nowrap">
                 {formatPrice(
-                  BASE_PRICE + options.material.price + options.finish.price
+                  (BASE_PRICE + options.material.price + options.finish.price) / 100
                 )}
               </p>
               <Button
