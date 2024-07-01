@@ -10,7 +10,7 @@ const inter = Recursive({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "CaseCobra",
-  description: "Create your own case with casecobra",
+  description: "Create your custom case with casecobra",
 };
 
 export default function RootLayout({
