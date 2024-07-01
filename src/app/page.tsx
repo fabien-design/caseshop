@@ -97,8 +97,8 @@ export default function Home() {
                 >
                   <div className="relative">
                     <div className="flex gap-0.5">
-                      {Array.from({ length: 5 }, () => (
-                        <Star className="h-4 w-4 fill-gray-500 text-gray-500" />
+                      {Array.from({ length: 5 }, (_, index) => (
+                        <Star key={index} className="h-4 w-4 fill-gray-500 text-gray-500" />
                       ))}
                     </div>
                     <div className="flex gap-0.5 absolute top-0">
